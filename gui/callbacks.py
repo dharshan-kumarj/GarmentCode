@@ -656,6 +656,8 @@ class GUIState:
         """According the whatever pattern current state"""
 
         print('INFO::Updating 3D...')
+        print('INFO::Current design parameters:')
+        print(yaml.dump(self.pattern_state.design_params, default_flow_style=False))
 
         # Cleanup 
         if self.ui_garment_3d is not None:
