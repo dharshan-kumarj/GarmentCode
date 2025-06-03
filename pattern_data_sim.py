@@ -12,10 +12,21 @@ import argparse
 import sys
 import shutil
 from pathlib import Path
+import yaml
+import trimesh
+from typing import Optional, Dict, Any
 
 # My modules
 import pygarment.data_config as data_config
 import pygarment.meshgen.datasim_utils as sim
+
+# Custom imports
+from assets.garment_programs.meta_garment import MetaGarment
+from assets.bodies.body_params import BodyParameters
+import pygarment as pyg
+from pygarment.meshgen.boxmeshgen import BoxMesh
+from pygarment.meshgen.simulation import run_sim
+from pygarment.meshgen.sim_config import PathCofig
 
 
 def get_command_args():
@@ -47,6 +58,120 @@ def gather_renders(out_data_path: Path, verbose=False):
             if verbose:
                 print(f'File {file} already exists')
             pass
+
+
+class GarmentTo3DService:
+    def __init__(self, output_root: str = './tmp_3d_service'):
+        """Initialize the 3D generation service
+        
+        Args:
+            output_root: Root directory for output files
+        """
+        self.output_root = Path(output_root)
+        self.output_root.mkdir(parents=True, exist_ok=True)
+        
+        # Load default body parameters
+        self.default_body_params = BodyParameters(Path.cwd() / 'assets/bodies/mean_all.yaml')
+        
+        # Load simulation properties
+        self.sim_props = data_config.Properties('./assets/Sim_props/gui_sim_props.yaml')
+        self.sim_props.set_section_stats('sim', fails={}, sim_time={}, spf={}, 
+                                       fin_frame={}, body_collisions={}, self_collisions={})
+        self.sim_props.set_section_stats('render', render_time={})
+
+    def generate_3d(self, 
+                   design_params: Dict[str, Any],
+                   session_id: str,
+                   body_params: Optional[Dict[str, Any]] = None) -> tuple[Path, Path]:
+        """Generate 3D files from garment parameters
+        
+        Args:
+            design_params: Dictionary of design parameters
+            session_id: Unique session identifier
+            body_params: Optional custom body parameters
+            
+        Returns:
+            Tuple of (output directory path, GLB file path)
+        """
+        # Create session directory
+        session_dir = self.output_root / session_id
+        session_dir.mkdir(parents=True, exist_ok=True)
+
+        # Setup body parameters
+        if body_params:
+            body = BodyParameters()
+            body.load_from_dict(body_params)
+        else:
+            body = self.default_body_params
+
+        # Create garment pattern
+        sew_pattern = MetaGarment('Configured_design', body, design_params)
+        
+        # Save pattern
+        pattern = sew_pattern.assembly()
+        pattern_folder = pattern.serialize(
+            session_dir,
+            to_subfolder=True,
+            with_3d=False,
+            with_text=False,
+            view_ids=False,
+            with_printable=True,
+            empty_ok=True
+        )
+        pattern_folder = Path(pattern_folder)
+        
+        # Save parameters
+        body.save(pattern_folder)
+        with open(pattern_folder / 'design_params.yaml', 'w') as f:
+            yaml.dump({'design': design_params}, f, default_flow_style=False, sort_keys=False)
+
+        # Setup paths for 3D generation
+        paths = PathCofig(
+            in_element_path=pattern_folder,
+            out_path=session_dir,
+            in_name=sew_pattern.name,
+            out_name=f'{sew_pattern.name}_3D',
+            body_name='mean_all',
+            smpl_body=False,
+            add_timestamp=False
+        )
+
+        # Generate and save garment box mesh
+        garment_box_mesh = BoxMesh(paths.in_g_spec, self.sim_props['sim']['config']['resolution_scale'])
+        garment_box_mesh.load()
+        garment_box_mesh.serialize(paths, store_panels=False, 
+                                 uv_config=self.sim_props['render']['config']['uv_texture'])
+
+        # Run simulation
+        run_sim(
+            garment_box_mesh.name,
+            self.sim_props,
+            paths,
+            save_v_norms=False,
+            store_usd=False,
+            optimize_storage=False,
+            verbose=False
+        )
+
+        # Convert to GLB
+        mesh = trimesh.load_mesh(paths.g_sim)
+        pbr_material = mesh.visual.material.to_pbr()
+        pbr_material.doubleSided = True
+        mesh.visual.material = pbr_material
+        glb_path = paths.out_el / f'{sew_pattern.name}_sim.glb'
+        mesh.export(glb_path)
+
+        return paths.out_el, glb_path
+
+    def cleanup_session(self, session_id: str):
+        """Clean up session files
+        
+        Args:
+            session_id: Session to clean up
+        """
+        session_dir = self.output_root / session_id
+        if session_dir.exists():
+            shutil.rmtree(session_dir)
 
 
 if __name__ == "__main__":
