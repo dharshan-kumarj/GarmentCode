@@ -60,15 +60,16 @@ def texture_mesh_islands(
 def _uv_connected_components(face_texture_coords):
     # Find connected components of face
     face_components = igl.facet_components(face_texture_coords)
-    num_ccs = max(face_components) + 1
+    # face_components is a tuple (num_components, component_labels)
+    num_ccs = face_components[0]  # Use the first element which is the number of components
 
     # Derive vertex component indices from faces
     vert_components = np.zeros(face_texture_coords.max() + 1, dtype=int)
     for i in range(num_ccs):
-        verts_in_cc = np.unique(face_texture_coords[face_components == i])
+        verts_in_cc = np.unique(face_texture_coords[face_components[1] == i])  # Use face_components[1] to get the array
         vert_components[verts_in_cc] = i
 
-    return vert_components, face_components, num_ccs
+    return vert_components, face_components[1], num_ccs
 
 def unwarp_UV(texture_coords, face_texture_coords, padding=3):
     # Unwrap uvs for each connected component------------------------
