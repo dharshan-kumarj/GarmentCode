@@ -212,7 +212,7 @@ class GUIPattern:
 
         # Save the pattern
         pattern_folder = self.save(False, save_pattern=def_sew_pattern)
-
+         
         # Paths
         paths = PathCofig(
             in_element_path=pattern_folder, 
@@ -223,13 +223,13 @@ class GUIPattern:
             smpl_body=False,   # NOTE: depends on chosen body model
             add_timestamp=False
         )
-
+        
         # Generate and save garment box mesh (if not existent)
         garment_box_mesh = BoxMesh(paths.in_g_spec, props['sim']['config']['resolution_scale'])
         garment_box_mesh.load()
         garment_box_mesh.serialize(
             paths, store_panels=False, uv_config=props['render']['config']['uv_texture'])
-
+        
         # TODOLOW Don't print progress to console with so many lines
         run_sim(
             garment_box_mesh.name, 
@@ -240,7 +240,8 @@ class GUIPattern:
             optimize_storage=False,
             verbose=False
         )
-
+        
+        
         # Convert to displayable element
         mesh = trimesh.load_mesh(paths.g_sim)
 
@@ -253,7 +254,7 @@ class GUIPattern:
 
         self.paths_3d = paths
         self.is_in_3D = True
-
+        print("paths: ",paths.out_el, paths.g_sim_glb.name)
         return paths.out_el, paths.g_sim_glb.name
 
     # Current state
