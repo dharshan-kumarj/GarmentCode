@@ -3,100 +3,1167 @@ import json
 
 # Test data
 test_data = {
-    "design_params": {
-        "meta": {
-            "upper": {"v": "FittedShirt", "type": "select_null", "range": ["FittedShirt", "Shirt", None], "default_prob": 0.3},
-            "bottom": {"v": None, "type": "select_null", "range": ["SkirtCircle", "AsymmSkirtCircle", "GodetSkirt", "Pants", "Skirt2", "SkirtManyPanels", "PencilSkirt", "SkirtLevels", None], "default_prob": 0.3},
-            "wb": {"v": None, "type": "select_null", "range": ["StraightWB", "FittedWB", None], "default_prob": 0.5}
-        },
-        "shirt": {
-            "width": {"v": 1.05, "type": "float", "range": [1.0, 1.3], "default_prob": 0.4},
-            "strapless": {"v": False, "type": "bool", "range": [True, False], "default_prob": 0.8},
-            "length": {"v": 1.2, "type": "float", "range": [0.5, 3.5], "default_prob": 0.7},
-            "flare": {"v": 1.0, "type": "float", "range": [0.7, 1.6], "default_prob": 0.4}
-        },
-        "sleeve": {
-            "sleeveless": {"v": True, "type": "bool", "range": [True, False], "default_prob": 0.7},
-            "armhole_shape": {"v": "ArmholeCurve", "type": "select", "range": ["ArmholeSquare", "ArmholeAngle", "ArmholeCurve"], "default_prob": 0.7},
-            "length": {"v": 0.3, "type": "float", "range": [0.1, 1.15]},
-            "connecting_width": {"v": 0.2, "type": "float", "range": [0, 2], "default_prob": 0.6},
-            "end_width": {"v": 1.0, "type": "float", "range": [0.2, 2], "default_prob": 0.4},
-            "sleeve_angle": {"v": 10, "type": "int", "range": [10, 50]},
-            "smoothing_coeff": {"v": 0.25, "type": "float", "range": [0.1, 0.4], "default_prob": 0.8},
-            "opening_dir_mix": {"v": 0.1, "type": "float", "range": [-0.9, 0.8], "default_prob": 1.0},
-            "standing_shoulder": {"v": False, "type": "bool", "range": [True, False], "default_prob": 0.8},
-            "standing_shoulder_len": {"v": 5.0, "type": "float", "range": [4, 10]},
-            "connect_ruffle": {"v": 1, "type": "float", "range": [1, 2], "default_prob": 0.4},
-            "cuff": {
-                "type": {"v": None, "type": "select_null", "range": ["CuffBand", "CuffSkirt", "CuffBandSkirt", None]},
-                "cuff_len": {"v": 0.1, "type": "float", "range": [0.05, 0.9], "default_prob": 0.7},
-                "skirt_flare": {"v": 1.2, "type": "float", "range": [1, 2]},
-                "skirt_fraction": {"v": 0.5, "type": "float", "range": [0.1, 0.9], "default_prob": 0.5},
-                "skirt_ruffle": {"v": 1.0, "type": "float", "range": [1, 1.5], "default_prob": 0.3},
-                "top_ruffle": {"v": 1, "type": "float", "range": [1, 3]}
-            }
-        },
-        "collar": {
-            "f_collar": {"v": "CircleNeckHalf", "type": "select", "range": ["CircleNeckHalf", "CurvyNeckHalf", "VNeckHalf", "SquareNeckHalf", "TrapezoidNeckHalf", "CircleArcNeckHalf", "Bezier2NeckHalf"], "default_prob": 0.4},
-            "b_collar": {"v": "CircleNeckHalf", "type": "select", "range": ["CircleNeckHalf", "CurvyNeckHalf", "VNeckHalf", "SquareNeckHalf", "TrapezoidNeckHalf", "CircleArcNeckHalf", "Bezier2NeckHalf"], "default_prob": 0.8},
-            "width": {"v": 0.2, "type": "float", "range": [-0.5, 1], "default_prob": 0.4},
-            "fc_depth": {"v": 0.4, "type": "float", "range": [0.3, 2], "default_prob": 0.3},
-            "bc_depth": {"v": 0, "type": "float", "range": [0, 2], "default_prob": 0.4},
-            "fc_angle": {"v": 95, "type": "int", "range": [70, 110]},
-            "bc_angle": {"v": 95, "type": "int", "range": [70, 110]},
-            "f_bezier_x": {"v": 0.3, "type": "float", "range": [0.05, 0.95], "default_prob": 0.4},
-            "f_bezier_y": {"v": 0.55, "type": "float", "range": [0.05, 0.95], "default_prob": 0.4},
-            "b_bezier_x": {"v": 0.15, "type": "float", "range": [0.05, 0.95], "default_prob": 0.4},
-            "b_bezier_y": {"v": 0.1, "type": "float", "range": [0.05, 0.95]},
-            "f_flip_curve": {"v": False, "type": "bool", "range": [True, False], "default_prob": 0.8},
-            "b_flip_curve": {"v": False, "type": "bool", "range": [True, False], "default_prob": 0.8},
-            "component": {
-                "style": {"v": None, "type": "select_null", "range": ["Turtle", "SimpleLapel", "Hood2Panels", None], "default_prob": 0.6},
-                "depth": {"v": 7, "type": "int", "range": [2, 8]},
-                "lapel_standing": {"v": False, "type": "bool", "range": [True, False]},
-                "hood_depth": {"v": 1, "type": "float", "range": [1, 2], "default_prob": 0.6},
-                "hood_length": {"v": 1, "type": "float", "range": [1, 1.5], "default_prob": 0.6}
-            }
-        },
-        "left": {
-            "enable_asym": {"v": False, "type": "bool", "range": [True, False], "default_prob": 0.8},
-            "shirt": {
-                "strapless": {"v": False, "type": "bool", "range": [True, False], "default_prob": 0.8},
-                "width": {"v": 1.05, "type": "float", "range": [1.0, 1.3], "default_prob": 0.4},
-                "flare": {"v": 1.0, "type": "float", "range": [0.7, 1.6], "default_prob": 0.4}
-            },
-            "sleeve": {
-                "sleeveless": {"v": True, "type": "bool", "range": [True, False], "default_prob": 0.7},
-                "armhole_shape": {"v": "ArmholeCurve", "type": "select", "range": ["ArmholeSquare", "ArmholeAngle", "ArmholeCurve"], "default_prob": 0.7},
-                "length": {"v": 0.3, "type": "float", "range": [0.1, 1.15]},
-                "connecting_width": {"v": 0.2, "type": "float", "range": [0, 2], "default_prob": 0.6},
-                "end_width": {"v": 1.0, "type": "float", "range": [0.2, 2], "default_prob": 0.4},
-                "sleeve_angle": {"v": 10, "type": "int", "range": [10, 50]},
-                "smoothing_coeff": {"v": 0.25, "type": "float", "range": [0.1, 0.4], "default_prob": 0.8},
-                "opening_dir_mix": {"v": 0.1, "type": "float", "range": [-0.9, 0.8], "default_prob": 1.0}
-            },
-            "collar": {
-                "width": {"v": 0.2, "type": "float", "range": [0, 1], "default_prob": 0.4},
-                "f_collar": {"v": "CircleNeckHalf", "type": "select", "range": ["CircleNeckHalf", "CurvyNeckHalf", "VNeckHalf", "SquareNeckHalf", "TrapezoidNeckHalf", "CircleArcNeckHalf", "Bezier2NeckHalf"], "default_prob": 0.4},
-                "b_collar": {"v": "CircleNeckHalf", "type": "select", "range": ["CircleNeckHalf", "CurvyNeckHalf", "VNeckHalf", "SquareNeckHalf", "TrapezoidNeckHalf", "CircleArcNeckHalf", "Bezier2NeckHalf"], "default_prob": 0.8},
-                "f_bezier_x": {"v": 0.3, "type": "float", "range": [0.05, 0.95], "default_prob": 0.4},
-                "f_bezier_y": {"v": 0.55, "type": "float", "range": [0.05, 0.95]},
-                "b_bezier_x": {"v": 0.15, "type": "float", "range": [0.05, 0.95], "default_prob": 0.4},
-                "b_bezier_y": {"v": 0.1, "type": "float", "range": [0.05, 0.95]},
-                "f_flip_curve": {"v": False, "type": "bool", "range": [True, False], "default_prob": 0.8},
-                "b_flip_curve": {"v": False, "type": "bool", "range": [True, False], "default_prob": 0.8},
-                "fc_angle": {"v": 95, "type": "int", "range": [70, 110]},
-                "bc_angle": {"v": 95, "type": "int", "range": [70, 110]}
-            }
-        }
+  "meta": {
+    "upper": {
+      "v": "FittedShirt",
+      "range": [
+        "FittedShirt",
+        "Shirt",
+        None
+      ],
+      "type": "select_null",
+      "default_prob": 0.3
+    },
+    "wb": {
+      "v": "StraightWB",
+      "range": [
+        "StraightWB",
+        "FittedWB",
+        None
+      ],
+      "type": "select_null",
+      "default_prob": 0.5
+    },
+    "bottom": {
+      "v": "SkirtCircle",
+      "range": [
+        "SkirtCircle",
+        "AsymmSkirtCircle",
+        "GodetSkirt",
+        "Pants",
+        "Skirt2",
+        "SkirtManyPanels",
+        "PencilSkirt",
+        "SkirtLevels",
+      None
+      ],
+      "type": "select_null",
+      "default_prob": 0.3
     }
+  },
+  "waistband": {
+    "waist": {
+      "v": 1.75,
+      "range": [
+        1.0,
+        2
+      ],
+      "type": "float",
+      "default_prob": 0.7
+    },
+    "width": {
+      "v": 0.725,
+      "range": [
+        0.1,
+        1.0
+      ],
+      "type": "float",
+      "default_prob": 0.5
+    }
+  },
+  "shirt": {
+    "strapless": {
+      "v": False,
+      "range": [
+        True,
+        False
+      ],
+      "type": "bool",
+      "default_prob": 0.8
+    },
+    "length": {
+      "v": 1.2,
+      "range": [
+        0.5,
+        3.5
+      ],
+      "type": "float",
+      "default_prob": 0.7
+    },
+    "width": {
+      "v": 1.05,
+      "range": [
+        1.0,
+        1.3
+      ],
+      "type": "float",
+      "default_prob": 0.4
+    },
+    "flare": {
+      "v": 1.0,
+      "range": [
+        0.7,
+        1.6
+      ],
+      "type": "float",
+      "default_prob": 0.4
+    }
+  },
+  "collar": {
+    "f_collar": {
+      "v": "CircleNeckHalf",
+      "range": [
+        "CircleNeckHalf",
+        "CurvyNeckHalf",
+        "VNeckHalf",
+        "SquareNeckHalf",
+        "TrapezoidNeckHalf",
+        "CircleArcNeckHalf",
+        "Bezier2NeckHalf"
+      ],
+      "type": "select",
+      "default_prob": 0.4
+    },
+    "b_collar": {
+      "v": "CircleNeckHalf",
+      "range": [
+        "CircleNeckHalf",
+        "CurvyNeckHalf",
+        "VNeckHalf",
+        "SquareNeckHalf",
+        "TrapezoidNeckHalf",
+        "CircleArcNeckHalf",
+        "Bezier2NeckHalf"
+      ],
+      "type": "select",
+      "default_prob": 0.8
+    },
+    "width": {
+      "v": 0.2,
+      "range": [
+        -0.5,
+        1
+      ],
+      "type": "float",
+      "default_prob": 0.4
+    },
+    "fc_depth": {
+      "v": 0.4,
+      "range": [
+        0.3,
+        2
+      ],
+      "type": "float",
+      "default_prob": 0.3
+    },
+    "bc_depth": {
+      "v": 0,
+      "range": [
+        0,
+        2
+      ],
+      "type": "float",
+      "default_prob": 0.4
+    },
+    "fc_angle": {
+      "v": 95,
+      "range": [
+        70,
+        110
+      ],
+      "type": "int"
+    },
+    "bc_angle": {
+      "v": 95,
+      "range": [
+        70,
+        110
+      ],
+      "type": "int"
+    },
+    "f_bezier_x": {
+      "v": 0.3,
+      "range": [
+        0.05,
+        0.95
+      ],
+      "type": "float",
+      "default_prob": 0.4
+    },
+    "f_bezier_y": {
+      "v": 0.55,
+      "range": [
+        0.05,
+        0.95
+      ],
+      "type": "float",
+      "default_prob": 0.4
+    },
+    "b_bezier_x": {
+      "v": 0.15,
+      "range": [
+        0.05,
+        0.95
+      ],
+      "type": "float",
+      "default_prob": 0.4
+    },
+    "b_bezier_y": {
+      "v": 0.1,
+      "range": [
+        0.05,
+        0.95
+      ],
+      "type": "float",
+      "default_prob": 0.4
+    },
+    "f_flip_curve": {
+      "v": False,
+      "range": [
+        True,
+        False
+      ],
+      "type": "bool",
+      "default_prob": 0.8
+    },
+    "b_flip_curve": {
+      "v": False,
+      "range": [
+        True,
+        False
+      ],
+      "type": "bool",
+      "default_prob": 0.8
+    },
+    "component": {
+      "style": {
+        "v": None,
+        "range": [
+          "Turtle",
+          "SimpleLapel",
+          "Hood2Panels",
+        None
+        ],
+        "type": "select_null",
+        "default_prob": 0.6
+      },
+      "depth": {
+        "v": 7,
+        "range": [
+          2,
+          8
+        ],
+        "type": "int"
+      },
+      "lapel_standing": {
+        "v": False,
+        "range": [
+          True,
+          False
+        ],
+        "type": "bool"
+      },
+      "hood_depth": {
+        "v": 1,
+        "range": [
+          1,
+          2
+        ],
+        "type": "float",
+        "default_prob": 0.6
+      },
+      "hood_length": {
+        "v": 1,
+        "range": [
+          1,
+          1.5
+        ],
+        "type": "float",
+        "default_prob": 0.6
+      }
+    }
+  },
+  "sleeve": {
+    "sleeveless": {
+      "v": True,
+      "range": [
+        True,
+        False
+      ],
+      "type": "bool",
+      "default_prob": 0.7
+    },
+    "armhole_shape": {
+      "v": "ArmholeCurve",
+      "range": [
+        "ArmholeSquare",
+        "ArmholeAngle",
+        "ArmholeCurve"
+      ],
+      "type": "select",
+      "default_prob": 0.7
+    },
+    "length": {
+      "v": 0.3,
+      "range": [
+        0.1,
+        1.15
+      ],
+      "type": "float"
+    },
+    "connecting_width": {
+      "v": 0.2,
+      "range": [
+        0,
+        2
+      ],
+      "type": "float",
+      "default_prob": 0.6
+    },
+    "end_width": {
+      "v": 1.0,
+      "range": [
+        0.2,
+        2
+      ],
+      "type": "float",
+      "default_prob": 0.4
+    },
+    "sleeve_angle": {
+      "v": 10,
+      "range": [
+        10,
+        50
+      ],
+      "type": "int"
+    },
+    "opening_dir_mix": {
+      "v": 0.1,
+      "range": [
+        -0.9,
+        0.8
+      ],
+      "type": "float",
+      "default_prob": 1.0
+    },
+    "standing_shoulder": {
+      "v": False,
+      "range": [
+        True,
+        False
+      ],
+      "type": "bool",
+      "default_prob": 0.8
+    },
+    "standing_shoulder_len": {
+      "v": 5.0,
+      "range": [
+        4,
+        10
+      ],
+      "type": "float"
+    },
+    "connect_ruffle": {
+      "v": 1,
+      "range": [
+        1,
+        2
+      ],
+      "type": "float",
+      "default_prob": 0.4
+    },
+    "smoothing_coeff": {
+      "v": 0.25,
+      "range": [
+        0.1,
+        0.4
+      ],
+      "type": "float",
+      "default_prob": 0.8
+    },
+    "cuff": {
+      "type": {
+        "v": None,
+        "range": [
+          "CuffBand",
+          "CuffSkirt",
+          "CuffBandSkirt",
+        None
+        ],
+        "type": "select_null"
+      },
+      "top_ruffle": {
+        "v": 1,
+        "range": [
+          1,
+          3
+        ],
+        "type": "float"
+      },
+      "cuff_len": {
+        "v": 0.1,
+        "range": [
+          0.05,
+          0.9
+        ],
+        "type": "float",
+        "default_prob": 0.7
+      },
+      "skirt_fraction": {
+        "v": 0.5,
+        "range": [
+          0.1,
+          0.9
+        ],
+        "type": "float",
+        "default_prob": 0.5
+      },
+      "skirt_flare": {
+        "v": 1.2,
+        "range": [
+          1,
+          2
+        ],
+        "type": "float"
+      },
+      "skirt_ruffle": {
+        "v": 1.0,
+        "range": [
+          1,
+          1.5
+        ],
+        "type": "float",
+        "default_prob": 0.3
+      }
+    }
+  },
+  "left": {
+    "enable_asym": {
+      "v": False,
+      "range": [
+        True,
+        False
+      ],
+      "type": "bool",
+      "default_prob": 0.8
+    },
+    "shirt": {
+      "strapless": {
+        "v": False,
+        "range": [
+          True,
+          False
+        ],
+        "type": "bool",
+        "default_prob": 0.8
+      },
+      "width": {
+        "v": 1.05,
+        "range": [
+          1.0,
+          1.3
+        ],
+        "type": "float",
+        "default_prob": 0.4
+      },
+      "flare": {
+        "v": 1.0,
+        "range": [
+          0.7,
+          1.6
+        ],
+        "type": "float",
+        "default_prob": 0.4
+      }
+    },
+    "collar": {
+      "f_collar": {
+        "v": "CircleNeckHalf",
+        "range": [
+          "CircleNeckHalf",
+          "CurvyNeckHalf",
+          "VNeckHalf",
+          "SquareNeckHalf",
+          "TrapezoidNeckHalf",
+          "CircleArcNeckHalf",
+          "Bezier2NeckHalf"
+        ],
+        "type": "select",
+        "default_prob": 0.4
+      },
+      "b_collar": {
+        "v": "CircleNeckHalf",
+        "range": [
+          "CircleNeckHalf",
+          "CurvyNeckHalf",
+          "VNeckHalf",
+          "SquareNeckHalf",
+          "TrapezoidNeckHalf",
+          "CircleArcNeckHalf",
+          "Bezier2NeckHalf"
+        ],
+        "type": "select",
+        "default_prob": 0.8
+      },
+      "width": {
+        "v": 0.2,
+        "range": [
+          0,
+          1
+        ],
+        "type": "float",
+        "default_prob": 0.4
+      },
+      "fc_angle": {
+        "v": 95,
+        "range": [
+          70,
+          110
+        ],
+        "type": "int"
+      },
+      "bc_angle": {
+        "v": 95,
+        "range": [
+          70,
+          110
+        ],
+        "type": "int"
+      },
+      "f_bezier_x": {
+        "v": 0.3,
+        "range": [
+          0.05,
+          0.95
+        ],
+        "type": "float",
+        "default_prob": 0.4
+      },
+      "f_bezier_y": {
+        "v": 0.55,
+        "range": [
+          0.05,
+          0.95
+        ],
+        "type": "float"
+      },
+      "b_bezier_x": {
+        "v": 0.15,
+        "range": [
+          0.05,
+          0.95
+        ],
+        "type": "float",
+        "default_prob": 0.4
+      },
+      "b_bezier_y": {
+        "v": 0.1,
+        "range": [
+          0.05,
+          0.95
+        ],
+        "type": "float"
+      },
+      "f_flip_curve": {
+        "v": False,
+        "range": [
+          True,
+          False
+        ],
+        "type": "bool",
+        "default_prob": 0.8
+      },
+      "b_flip_curve": {
+        "v": False,
+        "range": [
+          True,
+          False
+        ],
+        "type": "bool",
+        "default_prob": 0.8
+      }
+    },
+    "sleeve": {
+      "sleeveless": {
+        "v": True,
+        "range": [
+          True,
+          False
+        ],
+        "type": "bool",
+        "default_prob": 0.7
+      },
+      "armhole_shape": {
+        "v": "ArmholeCurve",
+        "range": [
+          "ArmholeSquare",
+          "ArmholeAngle",
+          "ArmholeCurve"
+        ],
+        "type": "select",
+        "default_prob": 0.7
+      },
+      "length": {
+        "v": 0.3,
+        "range": [
+          0.1,
+          1.15
+        ],
+        "type": "float"
+      },
+      "connecting_width": {
+        "v": 0.2,
+        "range": [
+          0,
+          2
+        ],
+        "type": "float",
+        "default_prob": 0.6
+      },
+      "end_width": {
+        "v": 1.0,
+        "range": [
+          0.2,
+          2
+        ],
+        "type": "float",
+        "default_prob": 0.4
+      },
+      "sleeve_angle": {
+        "v": 10,
+        "range": [
+          10,
+          50
+        ],
+        "type": "int"
+      },
+      "opening_dir_mix": {
+        "v": 0.1,
+        "range": [
+          -0.9,
+          0.8
+        ],
+        "type": "float",
+        "default_prob": 1.0
+      },
+      "standing_shoulder": {
+        "v": False,
+        "range": [
+          True,
+          False
+        ],
+        "type": "bool",
+        "default_prob": 0.8
+      },
+      "standing_shoulder_len": {
+        "v": 5.0,
+        "range": [
+          4,
+          10
+        ],
+        "type": "float"
+      },
+      "connect_ruffle": {
+        "v": 1,
+        "range": [
+          1,
+          2
+        ],
+        "type": "float",
+        "default_prob": 0.4
+      },
+      "smoothing_coeff": {
+        "v": 0.25,
+        "range": [
+          0.1,
+          0.4
+        ],
+        "type": "float",
+        "default_prob": 0.8
+      },
+      "cuff": {
+        "type": {
+          "v": None,
+          "range": [
+            "CuffBand",
+            "CuffSkirt",
+            "CuffBandSkirt",
+          None
+          ],
+          "type": "select_null"
+        },
+        "top_ruffle": {
+          "v": 1,
+          "range": [
+            1,
+            2
+          ],
+          "type": "float"
+        },
+        "cuff_len": {
+          "v": 0.1,
+          "range": [
+            0.05,
+            0.9
+          ],
+          "type": "float",
+          "default_prob": 0.7
+        },
+        "skirt_fraction": {
+          "v": 0.5,
+          "range": [
+            0.1,
+            0.9
+          ],
+          "type": "float",
+          "default_prob": 0.5
+        },
+        "skirt_flare": {
+          "v": 1.2,
+          "range": [
+            1,
+            2
+          ],
+          "type": "float"
+        },
+        "skirt_ruffle": {
+          "v": 1.0,
+          "range": [
+            1,
+            1.5
+          ],
+          "type": "float",
+          "default_prob": 0.3
+        }
+      }
+    }
+  },
+  "skirt": {
+    "length": {
+      "v": 0.2,
+      "range": [
+        -0.2,
+        0.95
+      ],
+      "type": "float"
+    },
+    "rise": {
+      "v": 1,
+      "range": [
+        0.5,
+        1
+      ],
+      "type": "float",
+      "default_prob": 0.3
+    },
+    "ruffle": {
+      "v": 1.3,
+      "range": [
+        1,
+        2
+      ],
+      "type": "float",
+      "default_prob": 0.3
+    },
+    "bottom_cut": {
+      "v": 0,
+      "range": [
+        0,
+        0.9
+      ],
+      "type": "float",
+      "default_prob": 0.3
+    },
+    "flare": {
+      "v": 0,
+      "range": [
+        0,
+        20
+      ],
+      "type": "int",
+      "default_prob": 0.5
+    }
+  },
+  "flare-skirt": {
+    "length": {
+      "v": 0.2,
+      "range": [
+        -0.2,
+        0.95
+      ],
+      "type": "float"
+    },
+    "rise": {
+      "v": 1,
+      "range": [
+        0.5,
+        1
+      ],
+      "type": "float",
+      "default_prob": 0.3
+    },
+    "suns": {
+      "v": 0.75,
+      "range": [
+        0.1,
+        1.95
+      ],
+      "type": "float"
+    },
+    "skirt-many-panels": {
+      "n_panels": {
+        "v": 4,
+        "range": [
+          4,
+          15
+        ],
+        "type": "int"
+      },
+      "panel_curve": {
+        "v": 0,
+        "range": [
+          -0.35,
+          -0.25,
+          -0.15,
+          0,
+          0.15,
+          0.25,
+          0.35,
+          0.45
+        ],
+        "type": "select"
+      }
+    },
+    "asymm": {
+      "front_length": {
+        "v": 0.5,
+        "range": [
+          0.1,
+          0.9
+        ],
+        "type": "float",
+        "default_prob": 0.5
+      }
+    },
+    "cut": {
+      "add": {
+        "v": False,
+        "range": [
+          True,
+          False
+        ],
+        "type": "bool",
+        "default_prob": 0.6
+      },
+      "depth": {
+        "v": 0.5,
+        "range": [
+          0.05,
+          0.95
+        ],
+        "type": "float",
+        "default_prob": 0.6
+      },
+      "width": {
+        "v": 0.1,
+        "range": [
+          0.05,
+          0.4
+        ],
+        "type": "float"
+      },
+      "place": {
+        "v": -0.5,
+        "range": [
+          -1,
+          1
+        ],
+        "type": "float"
+      }
+    }
+  },
+  "godet-skirt": {
+    "base": {
+      "v": "PencilSkirt",
+      "range": [
+        "Skirt2",
+        "PencilSkirt"
+      ],
+      "type": "select",
+      "default_prob": 0.7
+    },
+    "insert_w": {
+      "v": 15,
+      "range": [
+        10,
+        50
+      ],
+      "type": "int"
+    },
+    "insert_depth": {
+      "v": 20,
+      "range": [
+        10,
+        50
+      ],
+      "type": "int"
+    },
+    "num_inserts": {
+      "v": 4,
+      "range": [
+        4,
+        6,
+        8,
+        10,
+        12
+      ],
+      "type": "select"
+    },
+    "cuts_distance": {
+      "v": 5,
+      "range": [
+        0,
+        10
+      ],
+      "type": "int"
+    }
+  },
+  "pencil-skirt": {
+    "length": {
+      "v": 0.4,
+      "range": [
+        0.2,
+        0.95
+      ],
+      "type": "float"
+    },
+    "rise": {
+      "v": 1,
+      "range": [
+        0.5,
+        1
+      ],
+      "type": "float",
+      "default_prob": 0.3
+    },
+    "flare": {
+      "v": 1.0,
+      "range": [
+        0.6,
+        1.5
+      ],
+      "type": "float",
+      "default_prob": 0.3
+    },
+    "low_angle": {
+      "v": 0,
+      "range": [
+        -30,
+        30
+      ],
+      "type": "int",
+      "default_prob": 0.7
+    },
+    "front_slit": {
+      "v": 0,
+      "range": [
+        0,
+        0.9
+      ],
+      "type": "float",
+      "default_prob": 0.4
+    },
+    "back_slit": {
+      "v": 0,
+      "range": [
+        0,
+        0.9
+      ],
+      "type": "float",
+      "default_prob": 0.4
+    },
+    "left_slit": {
+      "v": 0,
+      "range": [
+        0,
+        0.9
+      ],
+      "type": "float",
+      "default_prob": 0.6
+    },
+    "right_slit": {
+      "v": 0,
+      "range": [
+        0,
+        0.9
+      ],
+      "type": "float",
+      "default_prob": 0.6
+    },
+    "style_side_cut": {
+      "v": None,
+      "range": [
+        "Sun",
+        "SIGGRAPH_logo",
+      None
+      ],
+      "type": "select_null",
+      "default_prob": 1.0
+    }
+  },
+  "levels-skirt": {
+    "base": {
+      "v": "PencilSkirt",
+      "range": [
+        "Skirt2",
+        "PencilSkirt",
+        "SkirtCircle",
+        "AsymmSkirtCircle"
+      ],
+      "type": "select"
+    },
+    "level": {
+      "v": "Skirt2",
+      "range": [
+        "Skirt2",
+        "SkirtCircle",
+        "AsymmSkirtCircle"
+      ],
+      "type": "select"
+    },
+    "num_levels": {
+      "v": 1,
+      "range": [
+        1,
+        5
+      ],
+      "type": "int"
+    },
+    "level_ruffle": {
+      "v": 1.0,
+      "range": [
+        1,
+        1.7
+      ],
+      "type": "float"
+    },
+    "length": {
+      "v": 0.5,
+      "range": [
+        0.2,
+        0.95
+      ],
+      "type": "float"
+    },
+    "rise": {
+      "v": 1,
+      "range": [
+        0.5,
+        1
+      ],
+      "type": "float",
+      "default_prob": 0.3
+    },
+    "base_length_frac": {
+      "v": 0.5,
+      "range": [
+        0.2,
+        0.8
+      ],
+      "type": "float"
+    }
+  },
+  "pants": {
+    "length": {
+      "v": 0.3,
+      "range": [
+        0.2,
+        0.9
+      ],
+      "type": "float"
+    },
+    "width": {
+      "v": 1.0,
+      "range": [
+        1.0,
+        1.5
+      ],
+      "type": "float",
+      "default_prob": 0.5
+    },
+    "flare": {
+      "v": 1.0,
+      "range": [
+        0.5,
+        1.2
+      ],
+      "type": "float",
+      "default_prob": 0.3
+    },
+    "rise": {
+      "v": 1.0,
+      "range": [
+        0.5,
+        1
+      ],
+      "type": "float",
+      "default_prob": 0.3
+    },
+    "cuff": {
+      "type": {
+        "v": None,
+        "range": [
+          "CuffBand",
+          "CuffSkirt",
+          "CuffBandSkirt",
+        None
+        ],
+        "type": "select_null",
+        "default_prob": 0.5
+      },
+      "top_ruffle": {
+        "v": 1.0,
+        "range": [
+          1,
+          2
+        ],
+        "type": "float"
+      },
+      "cuff_len": {
+        "v": 0.1,
+        "range": [
+          0.05,
+          0.9
+        ],
+        "type": "float",
+        "default_prob": 0.3
+      },
+      "skirt_fraction": {
+        "v": 0.5,
+        "range": [
+          0.1,
+          0.9
+        ],
+        "type": "float"
+      },
+      "skirt_flare": {
+        "v": 1.2,
+        "range": [
+          1,
+          2
+        ],
+        "type": "float"
+      },
+      "skirt_ruffle": {
+        "v": 1.0,
+        "range": [
+          1,
+          1.5
+        ],
+        "type": "float"
+      }
+    }
+  }
 }
 
 # Make the request
 try:
+    request_data = {
+        "design_params": test_data
+    }
     response = requests.post(
         "http://localhost:8000/generate3d",
-        json=test_data
+        json=request_data
     )
     print(f"Status Code: {response.status_code}")
     print(f"Response: {json.dumps(response.json(), indent=2) if response.ok else response.text}")

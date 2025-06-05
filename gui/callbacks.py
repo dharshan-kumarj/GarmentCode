@@ -10,7 +10,7 @@ import numpy as np
 import shutil
 from pathlib import Path
 import time
-
+import json
 from nicegui import ui, app, events
 
 # Async execution of regular functions
@@ -657,7 +657,12 @@ class GUIState:
 
         print('INFO::Updating 3D...')
         print('INFO::Current design parameters:')
-        print(yaml.dump(self.pattern_state.design_params, default_flow_style=False))
+        # Write design parameters to a log file
+        log_file = Path('./tmp_gui/design_params.log')
+        log_file.parent.mkdir(parents=True, exist_ok=True)
+        with open(log_file, 'w') as f:
+            json.dump(self.pattern_state.design_params, f, indent=2)
+        print(f'INFO::Design parameters written to {log_file}')
 
         # Cleanup 
         if self.ui_garment_3d is not None:
