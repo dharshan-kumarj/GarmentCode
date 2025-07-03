@@ -22,13 +22,18 @@ logger = logging.getLogger(__name__)
 
 # Pydantic models for request/response
 class Generate3DRequest(BaseModel):
-    design_params: Dict[str, Any]
+    pattern_specification: Dict[str, Any]  # JSON pattern specification like dress_pencil_specification.json
     body_params: Optional[Dict[str, Any]] = None
 
 class Generate3DResponse(BaseModel):
     session_id: str
     glb_file_path: str
     output_dir: str
+
+# Legacy request model for backward compatibility
+class LegacyGenerate3DRequest(BaseModel):
+    design_params: Dict[str, Any]
+    body_params: Optional[Dict[str, Any]] = None
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -48,17 +53,17 @@ except Exception as e:
 
 @app.post("/generate3d", response_model=Generate3DResponse)
 async def generate_3d(request: Generate3DRequest):
-    """Generate 3D files from garment parameters
+    """Generate 3D files from pattern specification
     
     Args:
-        request: Generate3DRequest containing design and optional body parameters
+        request: Generate3DRequest containing pattern specification and optional body parameters
         
     Returns:
         Generate3DResponse with session ID and file paths
     """
     try:
         logger.info("Received generate3d request")
-        logger.debug(f"Design params: {request.design_params}")
+        logger.debug(f"Pattern specification keys: {list(request.pattern_specification.keys())}")
         if request.body_params:
             logger.debug(f"Body params: {request.body_params}")
 
@@ -67,7 +72,46 @@ async def generate_3d(request: Generate3DRequest):
         logger.info(f"Created session ID: {session_id}")
         
         # Generate 3D files
-        logger.info("Starting 3D generation")
+        logger.info("Starting 3D generation from pattern specification")
+        output_dir, glb_path = service.generate_3d(
+            pattern_specification=request.pattern_specification,
+            session_id=session_id,
+            body_params=request.body_params
+        )
+        logger.info(f"3D generation completed. Output dir: {output_dir}, GLB path: {glb_path}")
+        
+        return Generate3DResponse(
+            session_id=session_id,
+            glb_file_path=str(glb_path),
+            output_dir=str(output_dir)
+        )
+    except Exception as e:
+        logger.error(f"Error in generate_3d: {str(e)}")
+        logger.error(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"Error in 3D generation: {str(e)}\n{traceback.format_exc()}")
+
+@app.post("/generate3d_legacy", response_model=Generate3DResponse)
+async def generate_3d_legacy(request: LegacyGenerate3DRequest):
+    """Generate 3D files from design parameters (Legacy endpoint for backward compatibility)
+    
+    Args:
+        request: LegacyGenerate3DRequest containing design and optional body parameters
+        
+    Returns:
+        Generate3DResponse with session ID and file paths
+    """
+    try:
+        logger.info("Received legacy generate3d request")
+        logger.debug(f"Design params: {request.design_params}")
+        if request.body_params:
+            logger.debug(f"Body params: {request.body_params}")
+
+        # Generate unique session ID
+        session_id = str(uuid.uuid4())
+        logger.info(f"Created session ID: {session_id}")
+        
+        # Generate 3D files using legacy method
+        logger.info("Starting 3D generation from design parameters")
         output_dir, glb_path = service.generate_3d(
             design_params=request.design_params,
             session_id=session_id,
@@ -81,7 +125,7 @@ async def generate_3d(request: Generate3DRequest):
             output_dir=str(output_dir)
         )
     except Exception as e:
-        logger.error(f"Error in generate_3d: {str(e)}")
+        logger.error(f"Error in generate_3d_legacy: {str(e)}")
         logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"Error in 3D generation: {str(e)}\n{traceback.format_exc()}")
 
@@ -135,4 +179,4 @@ async def cleanup_session(session_id: str):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="debug") 
+    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="debug")

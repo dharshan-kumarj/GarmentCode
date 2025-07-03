@@ -14,6 +14,7 @@ import shutil
 from pathlib import Path
 import yaml
 import trimesh
+import json
 from typing import Optional, Dict, Any
 
 # My modules
@@ -80,19 +81,24 @@ class GarmentTo3DService:
         self.sim_props.set_section_stats('render', render_time={})
 
     def generate_3d(self, 
-                   design_params: Dict[str, Any],
-                   session_id: str,
+                   design_params: Dict[str, Any] = None,
+                   pattern_specification: Dict[str, Any] = None,
+                   session_id: str = None,
                    body_params: Optional[Dict[str, Any]] = None) -> tuple[Path, Path]:
-        """Generate 3D files from garment parameters
+        """Generate 3D files from garment parameters OR pattern specification
         
         Args:
-            design_params: Dictionary of design parameters
+            design_params: Dictionary of design parameters (legacy)
+            pattern_specification: Direct pattern specification JSON
             session_id: Unique session identifier
             body_params: Optional custom body parameters
             
         Returns:
             Tuple of (output directory path, GLB file path)
         """
+        if design_params is None and pattern_specification is None:
+            raise ValueError("Either design_params or pattern_specification must be provided")
+        
         # Create session directory
         session_dir = self.output_root / session_id
         session_dir.mkdir(parents=True, exist_ok=True)
@@ -104,6 +110,64 @@ class GarmentTo3DService:
         else:
             body = self.default_body_params
 
+        if pattern_specification is not None:
+            # Use pattern specification directly
+            return self._generate_from_pattern_spec(pattern_specification, session_dir, body)
+        else:
+            # Legacy: Use design parameters to generate pattern
+            return self._generate_from_design_params(design_params, session_dir, body)
+
+    def _generate_from_pattern_spec(self, pattern_specification: Dict[str, Any], 
+                                  session_dir: Path, body: BodyParameters) -> tuple[Path, Path]:
+        """Generate 3D from pattern specification JSON"""
+        # Save pattern specification to file
+        pattern_name = "user_pattern"
+        pattern_file = session_dir / f"{pattern_name}_specification.json"
+        
+        with open(pattern_file, 'w') as f:
+            json.dump(pattern_specification, f, indent=2)
+        
+        # Setup paths for 3D generation
+        paths = PathCofig(
+            in_element_path=session_dir,
+            out_path=session_dir,
+            in_name=pattern_name,
+            out_name=f'{pattern_name}_3D',
+            body_name='mean_all',
+            smpl_body=False,
+            add_timestamp=False
+        )
+
+        # Generate and save garment box mesh
+        garment_box_mesh = BoxMesh(paths.in_g_spec, self.sim_props['sim']['config']['resolution_scale'])
+        garment_box_mesh.load()
+        garment_box_mesh.serialize(paths, store_panels=False, 
+                                 uv_config=self.sim_props['render']['config']['uv_texture'])
+
+        # Run simulation
+        run_sim(
+            garment_box_mesh.name,
+            self.sim_props,
+            paths,
+            save_v_norms=False,
+            store_usd=False,
+            optimize_storage=False,
+            verbose=False
+        )
+
+        # Convert to GLB
+        mesh = trimesh.load_mesh(paths.g_sim)
+        pbr_material = mesh.visual.material.to_pbr()
+        pbr_material.doubleSided = True
+        mesh.visual.material = pbr_material
+        glb_path = paths.out_el / f'{pattern_name}_sim.glb'
+        mesh.export(glb_path)
+
+        return paths.out_el, glb_path
+
+    def _generate_from_design_params(self, design_params: Dict[str, Any], 
+                                   session_dir: Path, body: BodyParameters) -> tuple[Path, Path]:
+        """Generate 3D from design parameters (legacy method)"""
         # Create garment pattern
         sew_pattern = MetaGarment('Configured_design', body, design_params)
         
