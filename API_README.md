@@ -1,65 +1,36 @@
-# Garment 3D Generation Service API
+# Garment 3D Generation & SVG Pattern Service API
 
-A RESTful API service for generating 3D garment files from pattern parameters using FastAPI.
+A RESTful API service for generating 3D garment files and SVG pattern files from pattern parameters using FastAPI.
 
 ## Base URL
 ```
 http://localhost:8000
 ```
 
-## Testing the API
+## Services Overview
 
-### Quick Test with test_api.py
+This API provides two main services:
+1. **3D Generation Service**: Generate 3D garment models (GLB files) with physics simulation
+2. **SVG Pattern Service**: Generate 2D pattern files (SVG, PNG, PDF) for cutting and printing
 
-A test script is provided to quickly verify the API is working correctly:
+## Quick Start
 
+### Start the API Server
 ```bash
-# Make sure the API service is running first
 python api_garment_3d_service.py
+```
 
-# In another terminal, run the test
+### Test the APIs
+```bash
+# Test 3D generation
 python test_api.py
+
+# Test SVG generation  
+python test_svg_api.py
 ```
 
-The test script will:
-1. Send a POST request to `/generate3d` with sample garment parameters
-2. Display the response including session ID and file paths
-3. Show any errors if the request fails
-
-**Expected successful response:**
-```json
-{
-  "session_id": "uuid-string",
-  "glb_file_path": "/path/to/generated/file.glb", 
-  "output_dir": "/path/to/output/directory"
-}
-```
-
-### Full Test Workflow
-
-For a complete test including file download:
-
-```python
-import requests
-import json
-
-# 1. Generate 3D garment (using data from test_api.py)
-response = requests.post("http://localhost:8000/generate3d", json=test_data)
-if response.ok:
-    result = response.json()
-    session_id = result["session_id"]
-    
-    # 2. Download the GLB file
-    download_response = requests.get(f"http://localhost:8000/download/{session_id}")
-    if download_response.ok:
-        with open(f"garment_{session_id}.glb", "wb") as f:
-            f.write(download_response.content)
-        print("GLB file downloaded successfully")
-    
-    # 3. Cleanup when done
-    cleanup_response = requests.delete(f"http://localhost:8000/cleanup/{session_id}")
-    print("Session cleaned up")
-```
+### Web Demo
+Open `svg_demo.html` in your browser for an interactive web interface to test SVG generation.
 
 ## Endpoints
 
@@ -130,6 +101,53 @@ Clean up temporary files for a session.
 **Status Codes:**
 - `200 OK` - Cleanup successful
 - `500 Internal Server Error` - Cleanup failed
+
+### 4. Generate SVG Pattern
+Generate 2D SVG pattern file from garment design parameters.
+
+**Endpoint:** `POST /generate_svg`
+
+**Request Body:**
+```json
+{
+  "design_params": {
+    "meta": { ... },
+    "shirt": { ... },
+    "sleeve": { ... },
+    "collar": { ... },
+    "left": { ... }
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "session_id": "uuid-string",
+  "svg_file_path": "/path/to/generated/pattern.svg",
+  "output_dir": "/path/to/output/directory"
+}
+```
+
+**Status Codes:**
+- `200 OK` - Successful SVG generation
+- `500 Internal Server Error` - SVG generation failed
+
+### 5. Download SVG File
+Download the generated SVG pattern file.
+
+**Endpoint:** `GET /download_svg/{session_id}`
+
+**Parameters:**
+- `session_id` (path) - Session ID returned from generate_svg
+
+**Response:**
+- Binary SVG file with `Content-Type: image/svg+xml`
+
+**Status Codes:**
+- `200 OK` - File found and returned
+- `404 Not Found` - SVG file not found for session
+- `500 Internal Server Error` - Download failed
 
 ## Design Parameters Structure
 
