@@ -6,10 +6,10 @@ def test_pattern_svg_api():
     """Test the SVG API with dress_pencil_specification.json (same input as 3D endpoint)"""
     
     # Load the pattern specification
-    pattern_file = Path("./assets/Patterns/dress_pencil_specification.json")
+    pattern_file = Path("./assets/Patterns/hoody_mean_specification.json")
     if not pattern_file.exists():
         print(f"Error: Pattern file not found at {pattern_file}")
-        print("Make sure dress_pencil_specification.json exists in assets/Patterns/")
+        print("Make sure hoody_mean_specification.json exists in assets/Patterns/")
         return
     
     with open(pattern_file, 'r') as f:
@@ -22,7 +22,7 @@ def test_pattern_svg_api():
     }
     
     # API endpoint for SVG generation
-    url = "http://localhost:8000/generate_pattern_svg"
+    url = "http://localhost:8000/generate_svg"
     
     print("🎨 Sending pattern specification to SVG API...")
     print(f"📋 Pattern has {len(pattern_specification['pattern']['panels'])} panels")
@@ -37,8 +37,7 @@ def test_pattern_svg_api():
             print(f"📁 Session ID: {result['session_id']}")
             print(f"🖼️ SVG file: {result['svg_file_path']}")
             print(f"📸 PNG file: {result['png_file_path']}")
-            print(f"📄 PDF file: {result['printable_pdf_path']}")
-            print(f"📂 Output directory: {result['output_dir']}")
+            print(f" Output directory: {result['output_dir']}")
             
             # Download the generated files
             session_id = result['session_id']
@@ -69,21 +68,7 @@ def test_pattern_svg_api():
             else:
                 print(f"❌ Failed to download PNG: {png_response.status_code}")
             
-            # Download PDF if available
-            if result['printable_pdf_path']:
-                pdf_download_url = f"http://localhost:8000/download_pdf/{session_id}"
-                print(f"📥 Downloading PDF from: {pdf_download_url}")
-                
-                pdf_response = requests.get(pdf_download_url)
-                if pdf_response.status_code == 200:
-                    pdf_filename = f"dress_pattern_{session_id}.pdf"
-                    with open(pdf_filename, 'wb') as f:
-                        f.write(pdf_response.content)
-                    print(f"💾 PDF saved as: {pdf_filename}")
-                else:
-                    print(f"❌ Failed to download PDF: {pdf_response.status_code}")
-            
-            print(f"\n🎉 All files downloaded successfully!")
+            print(f"\n🎉 SVG and PNG files downloaded successfully!")
             print(f"🧹 You can clean up the session with: DELETE /cleanup_svg/{session_id}")
             
         else:
@@ -96,84 +81,13 @@ def test_pattern_svg_api():
     except Exception as e:
         print(f"💥 Unexpected error: {e}")
 
-def test_with_custom_pattern():
-    """Test with a simple custom pattern"""
-    print("\n" + "="*60)
-    print("🧪 Testing with custom pattern...")
-    
-    # Simple test pattern
-    custom_pattern = {
-        "pattern": {
-            "panels": {
-                "test_panel": {
-                    "translation": [0, 0, 0],
-                    "rotation": [0, 0, 0],
-                    "vertices": [
-                        [0, 0],
-                        [10, 0],
-                        [10, 10],
-                        [0, 10]
-                    ],
-                    "edges": [
-                        {"endpoints": [0, 1]},
-                        {"endpoints": [1, 2]},
-                        {"endpoints": [2, 3]},
-                        {"endpoints": [3, 0]}
-                    ],
-                    "label": "test"
-                }
-            },
-            "stitches": [],
-            "panel_order": ["test_panel"]
-        },
-        "parameters": {},
-        "parameter_order": [],
-        "properties": {
-            "curvature_coords": "relative",
-            "normalize_panel_translation": False,
-            "normalized_edge_loops": True,
-            "units_in_meter": 100
-        }
-    }
-    
-    test_data = {
-        "pattern_specification": custom_pattern,
-        "body_params": None
-    }
-    
-    url = "http://localhost:8000/generate_pattern_svg"
-    
-    try:
-        response = requests.post(url, json=test_data, timeout=60)
-        
-        if response.status_code == 200:
-            result = response.json()
-            print("✅ Custom pattern test successful!")
-            print(f"Session ID: {result['session_id']}")
-            
-            # Download the SVG
-            session_id = result['session_id']
-            svg_response = requests.get(f"http://localhost:8000/download_svg/{session_id}")
-            if svg_response.status_code == 200:
-                with open(f"custom_pattern_{session_id}.svg", 'wb') as f:
-                    f.write(svg_response.content)
-                print(f"💾 Custom pattern SVG saved as: custom_pattern_{session_id}.svg")
-        else:
-            print(f"❌ Custom pattern test failed: {response.status_code}")
-            print(response.text)
-            
-    except Exception as e:
-        print(f"💥 Custom pattern test error: {e}")
-
 if __name__ == "__main__":
     print("🎯 Testing SVG Pattern Generation API")
     print("=" * 60)
     
     # Test with dress pattern
     test_pattern_svg_api()
-    
-    # Test with custom pattern
-    test_with_custom_pattern()
+
     
     print("\n" + "="*60)
     print("✨ Testing complete! Check the generated files.")

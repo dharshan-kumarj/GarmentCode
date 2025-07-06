@@ -25,6 +25,7 @@ system.json
 
 # file for small script tries
 tmp*
+temp_svg*
 *tmp*.mb
 Logs*
 output*
